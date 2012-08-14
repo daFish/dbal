@@ -91,6 +91,12 @@ class MySqlSchemaManager extends AbstractSchemaManager
         $tableColumn = array_change_key_case($tableColumn, CASE_LOWER);
 
         $dbType = strtolower($tableColumn['type']);
+
+        $unsigned = null;
+        if (preg_match('(unsigned)', $dbType)) {
+            $unsigned = true;
+        }
+
         $dbType = strtok($dbType, '(), ');
         if (isset($tableColumn['length'])) {
             $length = $tableColumn['length'];
@@ -100,13 +106,13 @@ class MySqlSchemaManager extends AbstractSchemaManager
             $decimal = strtok('(), ') ? strtok('(), '):null;
         }
         $type = array();
-        $fixed = null;
 
         if ( ! isset($tableColumn['name'])) {
             $tableColumn['name'] = '';
         }
 
-        $scale = null;
+        $fixed     = null;
+        $scale     = null;
         $precision = null;
 
         $type = $this->_platform->getDoctrineTypeMapping($dbType);
@@ -147,7 +153,7 @@ class MySqlSchemaManager extends AbstractSchemaManager
 
         $options = array(
             'length'        => $length,
-            'unsigned'      => (bool) (strpos($tableColumn['type'], 'unsigned') !== false),
+            'unsigned'      => (bool) $unsigned,
             'fixed'         => (bool) $fixed,
             'default'       => isset($tableColumn['default']) ? $tableColumn['default'] : null,
             'notnull'       => (bool) ($tableColumn['null'] != 'YES'),
